@@ -1,20 +1,41 @@
 terraform {
-  required_version = ">= 0.12, < 0.13"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
 }
 
+# Configure the AWS Provider
+# in windows
 provider "aws" {
-  region = "us-east-2"
+  region                   = "ap-southeast-1"
+  shared_credentials_files  = ["C:\\Users\\kyeongin\\.aws\\credentials"]
+  profile                  = "default"
+}
 
-  # 2.x 버전의 AWS 공급자 허용
-  version = "~> 2.0"
+# Get the latest Amazon Linux 2 AMI
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
 }
 
 resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0"
+  ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
 
   tags = {
     Name = "terraform-example"
   }
 }
-

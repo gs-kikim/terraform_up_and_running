@@ -1,0 +1,38 @@
+digraph G {
+  rankdir = "RL";
+  node [shape = rect, fontname = "sans-serif"];
+  "data.aws_ami.amazon_linux_2" [label="data.aws_ami.amazon_linux_2"];
+  "data.aws_availability_zones.available" [label="data.aws_availability_zones.available"];
+  "aws_autoscaling_group.example" [label="aws_autoscaling_group.example"];
+  "aws_internet_gateway.main" [label="aws_internet_gateway.main"];
+  "aws_launch_template.example" [label="aws_launch_template.example"];
+  "aws_lb.example" [label="aws_lb.example"];
+  "aws_lb_listener.http" [label="aws_lb_listener.http"];
+  "aws_lb_listener_rule.asg" [label="aws_lb_listener_rule.asg"];
+  "aws_lb_target_group.asg" [label="aws_lb_target_group.asg"];
+  "aws_route_table.public" [label="aws_route_table.public"];
+  "aws_route_table_association.public" [label="aws_route_table_association.public"];
+  "aws_security_group.alb" [label="aws_security_group.alb"];
+  "aws_security_group.instance" [label="aws_security_group.instance"];
+  "aws_subnet.public" [label="aws_subnet.public"];
+  "aws_vpc.main" [label="aws_vpc.main"];
+  "aws_autoscaling_group.example" -> "aws_launch_template.example";
+  "aws_autoscaling_group.example" -> "aws_lb_target_group.asg";
+  "aws_autoscaling_group.example" -> "aws_subnet.public";
+  "aws_internet_gateway.main" -> "aws_vpc.main";
+  "aws_launch_template.example" -> "data.aws_ami.amazon_linux_2";
+  "aws_launch_template.example" -> "aws_security_group.instance";
+  "aws_lb.example" -> "aws_security_group.alb";
+  "aws_lb.example" -> "aws_subnet.public";
+  "aws_lb_listener.http" -> "aws_lb.example";
+  "aws_lb_listener_rule.asg" -> "aws_lb_listener.http";
+  "aws_lb_listener_rule.asg" -> "aws_lb_target_group.asg";
+  "aws_lb_target_group.asg" -> "aws_vpc.main";
+  "aws_route_table.public" -> "aws_internet_gateway.main";
+  "aws_route_table_association.public" -> "aws_route_table.public";
+  "aws_route_table_association.public" -> "aws_subnet.public";
+  "aws_security_group.alb" -> "aws_vpc.main";
+  "aws_security_group.instance" -> "aws_vpc.main";
+  "aws_subnet.public" -> "data.aws_availability_zones.available";
+  "aws_subnet.public" -> "aws_vpc.main";
+}
