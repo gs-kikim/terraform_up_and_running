@@ -1,38 +1,41 @@
 terraform {
-  required_version = ">= 0.12, < 0.13"
-}
-
-provider "aws" {
-  region = "us-east-2"
-
-  # 2.x 버전의 AWS 공급자 허용
-  version = "~> 2.0"
-}
-
-resource "aws_s3_bucket" "terraform_state" {
-
-  bucket = var.bucket_name
-
-  // This is only here so we can destroy the bucket as part of automated tests. You should not copy this for production
-  // usage
-  force_destroy = true
-
-  # 상태 파일의 이력관리를 위해
-  # 버전관리 기능을 활성화 합니다.
-  versioning {
-    enabled = true
-  }
-
-  # Enable server-side encryption by default
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
     }
   }
 }
 
+provider "aws" {
+  region                   = "ap-southeast-1"
+}
+
+# Create the S3 bucket
+resource "aws_s3_bucket" "terraform_state" {
+  bucket        = var.bucket_name
+  force_destroy = true
+}
+
+# Enable versioning
+resource "aws_s3_bucket_versioning" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# Enable server-side encryption
+resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# Create DynamoDB table for state locking
 resource "aws_dynamodb_table" "terraform_locks" {
   name         = var.table_name
   billing_mode = "PAY_PER_REQUEST"
